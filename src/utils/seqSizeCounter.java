@@ -47,9 +47,9 @@ public class seqSizeCounter {
 	static int size8000bucket  = 0;
 	
 	
-	private static String sourceBaseString = "/home/steve/Desktop/ProteinPlacerBk/Fasta";
+	private static String sourceBaseString = "/home/steve/Desktop/ProteinPlacer3/Fasta";
 	//private static String sourceBaseString = "/ProteinPlacer/fasta";
-	private static String outFileString = "/home/steve/Desktop/ProteinPlacer/data/buckets.csv";
+	private static String outFileString = "/home/steve/Desktop/ProteinPlacer3/data/buckets.csv";
 	static List<List<String>> split = null;
 	
 	public static void main (String[] args){
