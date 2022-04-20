@@ -39,13 +39,7 @@ public class TheSinglePriorityThreadPool {
 		//make thread pool
 		theOnlyPool = new ThreadPoolExecutor(THREAD_POOL_SIZE, THREAD_POOL_SIZE, 1000L, TimeUnit.MILLISECONDS,
                 new PriorityBlockingQueue<Runnable>(THREAD_POOL_SIZE, new PriorityComparator())) {
-			/*
-			@Override
-            protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable){
-                RunnableFuture<T> newTaskFor = super.newTaskFor(callable);
-                return new PriorityFuture<T> (newTaskFor, ((PriorityFuture<?>) callable).getPriority());
-            }
-			*/
+			
 			@Override
             protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable){
 				PriorityFuture<T> f = null;
@@ -54,7 +48,7 @@ public class TheSinglePriorityThreadPool {
 	                f = new PriorityFuture<T> ((new FutureTask<T>(callable)), ((PriorityCallable)callable).getPriority());
 				}
 				else{
-					System.err.println("task is not PriorityRunnable");
+					System.err.println("task is not PriorityCallable");
 					System.exit(1);
 				}
 				return f;
@@ -126,12 +120,6 @@ public class TheSinglePriorityThreadPool {
 			ge.printStackTrace(System.err);
 		}//catch general exception
 	}//getGoAnchorLinkThread
-	/*
-	public static void AnchorPoolCleanup(){
-		goAnchorPool.shutdown();
-		while(!goAnchorPool.isTerminated()){}//wait on thread termination
-	}//AnchorPoolCleanup
-	*/
 	
 	public <T> void invokeAll(){
 		try {
@@ -187,17 +175,6 @@ public class TheSinglePriorityThreadPool {
 	   }//catch
 	}//shutdownAndAwaitTermination
 	
-	/*
-	public List<Future<PriorityRunnable>> invokeAll(List<Callable<PriorityRunnable>> list){
-		try {
-			return theOnlyPool.invokeAll(list);
-		} catch (InterruptedException ie) {
-			System.err.println("error invoking all " + ie.getMessage());
-			ie.printStackTrace();
-			return null;
-		}
-	}
-	*/
 	//Utility function to wrap Runnables as Callables
 	private static Callable makePriorityRunnableIntoPriorityCallable(final PriorityRunnable currentRunnable){
 		
