@@ -94,9 +94,6 @@ public class WebInterrogator{
 		//read sequence data from fasta file
 		getSequences(inSequencesFile,proteinList);
 		
-		//SingleProteinProcessingThreads = new SingleProteinProcessingThread[proteinList.size()];
-		//ExecutorService executor = Executors.newFixedThreadPool(processOneProteinThreads);
-		
 		//loop through sequences loading data into blast and search
 		ListIterator<Protein> proteinListLiter = proteinList.listIterator();
 		Protein currentProtien = null;
@@ -160,15 +157,12 @@ public class WebInterrogator{
 						boolean firstAccession = true;
 						Iterator<String> currentAccessionIdsIter = currentAccessionIds.keySet().iterator();
 						while(currentAccessionIdsIter.hasNext()){
-							//oneProteinWorkerThread = new ChokedSingleGoProteinProcessingThread(currentProtein, GoAnnotationLocations, currentAccessionIds,outFile, oos, thresholdEValue, debug);
-							//executor.execute(oneProteinWorkerThread);
 							String accession = currentAccessionIdsIter.next();
 							String eValueStr = currentAccessionIds.get(accession);
 							double eValue = Double.parseDouble(eValueStr);
 							if(eValue < thresholdEValue){
 								//process presumed non-random hit
 								StringBuilder region = new StringBuilder("");
-								//theAnchorLinkThreadGateway.getAnchorLinkThread(currentProtien, accession, region, goAnnotationLocations, textOutFile, firstAccession, finished);
 								TheSinglePriorityThreadPool.getAnchorLinkThread(currentProtien, accession, region, 
 										goAnnotationLocations, textOutFile, threadLogFile, firstAccession, debug);
 								firstAccession = false;
