@@ -209,9 +209,6 @@ System.out.println("after driver instantion");
 				}//synchronized
 			}//if(inputTextFeildCounter > 1)
 		}//while driver still on splash page
-		
-		//get and process genebank text for the protein accession string corresponds to
-		//String source = driver.getPageSource();	
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException ie) {
@@ -219,7 +216,12 @@ System.out.println("after driver instantion");
 			ie.printStackTrace();
 		}
 		
-		
+		//get and process genebank text for the protein accession string corresponds to
+		//String source = driver.getPageSource();
+		doGenbank():		
+	}//run
+	
+	public void doGenbank() {
 		final Wait<WebDriver> waitingDriver = new FluentWait<WebDriver>(driver)
 			       .withTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
 			       .pollingEvery(5, java.util.concurrent.TimeUnit.SECONDS);
@@ -661,7 +663,8 @@ System.out.println("Thread " + threadId + " after sequence load");
 			threadLogWriter.close();
 		}//synchronized(writeToThreadLogLock)
 		//threadLogWriter.close();
-	}//processAnchorLinks
+		//}//processAnchorLinks
+	}//doDenbank
 	
 	//check if driver closed properly
 	private static boolean driverHasQuit(WebDriver driver){
