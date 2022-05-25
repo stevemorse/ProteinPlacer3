@@ -42,18 +42,22 @@ import utils.SingleLock;
 public class WebInterrogator{
 	private static int inputFileNumber = 0;
 	private static double thresholdEValue = 1.0E-30;
-	private static final String inSequencesFileBaseString = "/home/steve/Desktop/ProteinPlacer/data/Fasta";
-	private static String outFileBaseString = "/home/steve/Desktop/ProteinPlacer/data/Blast2GoXML/results_";
-	private static String outTextFileBaseString = "/home/steve/Desktop/ProteinPlacer/data/Blast2GoXML/results_";
-	private static File inLocationsOBOFile = new File ("/home/steve/Desktop/ProteinPlacer/cellular_components.obo");
-	private static String proteinsOutFileBaseString = "/home/steve/Desktop/ProteinPlacer/data/Blast2GoXML/results_";
-	private static String proteinDataInFileString = "/home/steve/Desktop/ProteinPlacer/data/Blast2GoXML/results_";
+	private static final String inSequencesFileBaseString = "/home/steve/Desktop/ProteinPlacer3/data/Fasta";
+	private static String outFileBaseString = "/home/steve/Desktop/ProteinPlacer3/data/Blast2GoXML/results_";
+	private static String outTextFileBaseString = "/home/steve/Desktop/ProteinPlacer3/data/Blast2GoXML/results_";
+	private static File inLocationsOBOFile = new File ("/home/steve/Desktop/ProteinPlacer3/cellular_components.obo");
+	private static String proteinsOutFileBaseString = "/home/steve/Desktop/ProteinPlacer3/data/Blast2GoXML/results_";
+	private static String proteinDataInFileString = "/home/steve/Desktop/ProteinPlacer3/data/Blast2GoXML/results_";
 	private boolean debug = true;
 	List<Protein> proteinList = new ArrayList<Protein>();
 	//private int processOneProteinThreads = 0;
 	private File inSequencesFile = null;
 	private File proteinsOutFile = null;
 	private File outFile = null;
+	File threadLogFile = null;
+	File textOutFile = null;
+	File blastDataInFile = null;
+	File blastAnnotationsInFile = null;
 	//private File proteinDataInFile = null;
 	private Map<String, Map<String, String>> accessionIds = new HashMap<String, Map<String, String>>();
 	private Map<String, Map<String, String>> gIds = new HashMap<String, Map<String, String>>();
@@ -77,15 +81,26 @@ public class WebInterrogator{
 	 */
 	public void interrogate(){
 		
-		inSequencesFile = new File (inSequencesFileBaseString + inputFileNumber + ".txt");
-		proteinsOutFile = new File(proteinsOutFileBaseString + inputFileNumber + "/proteinsOut_" + inputFileNumber + ".bin");
-		outFile = new File(outFileBaseString + inputFileNumber + "/outSource_" + inputFileNumber + ".txt");
-		File threadLogFile = new File(proteinsOutFileBaseString + inputFileNumber + "/ThreadLog_" + inputFileNumber + ".txt");
-		File textOutFile = new File(outTextFileBaseString + inputFileNumber + "/textOutOfProtiens"
-				+ "_" + inputFileNumber + ".txt");
-		File blastDataInFile = new File(proteinDataInFileString + inputFileNumber + "/blastResult_" + inputFileNumber + ".xml");
-		File blastAnnotationsInFile = new File(proteinDataInFileString + inputFileNumber + "/annot_Seqs_" + inputFileNumber + ".txt");
-		
+		if (inputFileNumber == -1) {
+			inSequencesFile = new File ("/home/steve/Desktop/ProteinPlacer3/data/test.txt");
+			proteinsOutFile = new File ("/home/steve/Desktop/ProteinPlacer3/data/test.bin");
+			outFile = new File ("/home/steve/Desktop/ProteinPlacer3/data/out.txt");
+			threadLogFile = new File("/home/steve/Desktop/ProteinPlacer3/data/threadLog.txt");
+			textOutFile = new File("/home/steve/Desktop/ProteinPlacer3/data/textOutOfProteins.txt");
+			blastDataInFile = new File((outTextFileBaseString + "1" + "/textOutOfProtiens")
+					+ "_" + "0" + ".txt");
+			blastAnnotationsInFile = new File(proteinDataInFileString + "1" + "/annot_Seqs_" + "0" + ".txt");
+		}//if
+		else {
+			inSequencesFile = new File (inSequencesFileBaseString + inputFileNumber + ".txt");
+			proteinsOutFile = new File(proteinsOutFileBaseString + inputFileNumber + "/proteinsOut_" + inputFileNumber + ".bin");
+			outFile = new File(outFileBaseString + inputFileNumber + "/outSource_" + inputFileNumber + ".txt");
+			threadLogFile = new File(proteinsOutFileBaseString + inputFileNumber + "/ThreadLog_" + inputFileNumber + ".txt");
+			textOutFile = new File(outTextFileBaseString + inputFileNumber + "/textOutOfProtiens"
+					+ "_" + inputFileNumber + ".txt");
+			blastDataInFile = new File(proteinDataInFileString + inputFileNumber + "/blastResult_" + inputFileNumber + ".xml");
+			blastAnnotationsInFile = new File(proteinDataInFileString + inputFileNumber + "/annot_Seqs_" + inputFileNumber + ".txt");
+		}//else
 		Map<String, String> goAnnotationLocations = new HashMap<String, String>();
 		LocationLoader loader = new LocationLoader();
 		goAnnotationLocations = loader.loadLocations(inLocationsOBOFile, debug);
@@ -149,7 +164,7 @@ public class WebInterrogator{
 						else{
 							numAccesions = -1;
 						}
-						threadLogWriter.println("processin protein: " + protienCount + " of: " + proteinList.size() + " with " + numAccesions + "accessions");
+						threadLogWriter.println("processin protein: " + protienCount + " of: " + proteinList.size() + " with " + numAccesions + " accessions");
 						threadLogWriter.close();
 					}//synchronized
 					
@@ -255,12 +270,13 @@ public class WebInterrogator{
 	 * FastaName of a proteins sequence and the value is a Map of all accession hits and their 
 	 * respective eValues for the protein identified by its FastaName.
 	 */
-	public Map<String, Map<String, String>> getAccessionIds(File blastDataInFile.
+	public void getAccessionIds(File blastDataInFile,
 			Map<String, Map<String, String>> accessionIds,
 			Map<String, Map<String, String>> gIds){
 		
-		Map<String, Map<String, String>> accessionIds = new HashMap<String, Map<String, String>>();
+		accessionIds = new HashMap<String, Map<String, String>>();
 		Map<String, String> allHitsOfOneQuery = new HashMap<String, String>();
+		Map<String, String> allGiHitsOfOneQuery = new HashMap<String, String>();
 		char[] blastDataBuffer = new char[(int) blastDataInFile.length()];
 		System.out.println("in getAccessionIds ");
 		//read sequence data from file
@@ -291,8 +307,7 @@ public class WebInterrogator{
 			accessionIds.put(query, allHitsOfOneQuery);
 			allGiHitsOfOneQuery = parseHits(docs[docCount],1);
 			gIds.put(query, allGiHitsOfOneQuery);
-		}	
-		return accessionIds;
+		}			
 	}//getAccessionIds
 	
 	/**
@@ -315,7 +330,7 @@ public class WebInterrogator{
 				int accessionEnd = hits[hitCount].indexOf("</Hit_accession>");
 				String accession = hits[hitCount].substring(accessionBegin, accessionEnd);
 				int giBegin = hits[hitCount].indexOf("<Hit_id>gi|") + "<Hit_id>gi|".length();
-				int giEnd = hits[hitCount].indexOf("|gb|");
+				int giEnd = hits[hitCount].indexOf("|",giBegin);
 				String gi = hits[hitCount].substring(giBegin, giEnd);
 				int eValueBegin = hits[hitCount].indexOf("<Hsp_evalue>") + "<Hsp_evalue>".length();
 				int eValueEnd = hits[hitCount].indexOf("</Hsp_evalue>");
@@ -327,7 +342,9 @@ public class WebInterrogator{
 					allHitsOfOneQuery.put(gi,eValue);
 				} else {
 					System.err.println("hitFlag out of bounds error in parseHits");
-				}		}//if (hits.length > 1)
+				}//else	
+			}//for int hitCount = 1
+		}//if (hits.length > 1)
 		return allHitsOfOneQuery;
 	}//parseHits
 	

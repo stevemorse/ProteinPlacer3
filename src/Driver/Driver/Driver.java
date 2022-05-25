@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import protein.Protein;
-import NLP.ChokedWebInterrogator;
+import NLP.WebInterrogator;
 
 /**
  * The Driver for the entire program. Calls the ChokedWebInteragator.
@@ -33,6 +33,9 @@ public class Driver {
 		try{
 			inputFileInt = consoleInput.nextInt();
 			consoleInput.close();
+			if (inputFileInt == -1) {
+				System.out.println("you have chosen to run a test");
+			}
 			if(inputFileInt < 0 || inputFileInt > 74){
 				throw new NumberFormatException("integer entered is not in input range");
 			}//if out of range
