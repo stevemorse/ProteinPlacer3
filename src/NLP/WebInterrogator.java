@@ -115,10 +115,10 @@ public class WebInterrogator{
 		
 		//get accession ids
 		getAccessionIds(blastDataInFile,accessionIds,gIds);
+System.out.println("size of accessionIds is: " + accessionIds.size());		
 		//get GO annotations
 		Map<String, Map<String, String>> goAnnotations = getGOAnnotations(blastAnnotationsInFile);
-		
-		
+			
 		PrintWriter threadLogWriter = null;
 		FileOutputStream fout = null;
 		ObjectOutputStream oos = null;
@@ -160,6 +160,7 @@ public class WebInterrogator{
 						int numAccesions = 0;
 						if(currentAccessionIds != null){
 							numAccesions = currentAccessionIds.size();
+System.out.println("size of currentAccessionIds is: " + currentAccessionIds.size());
 						}
 						else{
 							numAccesions = -1;
@@ -274,7 +275,6 @@ public class WebInterrogator{
 			Map<String, Map<String, String>> accessionIds,
 			Map<String, Map<String, String>> gIds){
 		
-		accessionIds = new HashMap<String, Map<String, String>>();
 		Map<String, String> allHitsOfOneQuery = new HashMap<String, String>();
 		Map<String, String> allGiHitsOfOneQuery = new HashMap<String, String>();
 		char[] blastDataBuffer = new char[(int) blastDataInFile.length()];
@@ -302,12 +302,12 @@ public class WebInterrogator{
 			int queryBegin = currentDoc.indexOf("<BlastOutput_query-def>") + "<BlastOutput_query-def>".length();
 			int queryEnd = currentDoc.indexOf("</BlastOutput_query-def>");
 			String query = currentDoc.substring(queryBegin, queryEnd);
-			System.out.println("query: " + query);
+//System.out.println("query: " + query);
 			allHitsOfOneQuery = parseHits(docs[docCount],0);
 			accessionIds.put(query, allHitsOfOneQuery);
 			allGiHitsOfOneQuery = parseHits(docs[docCount],1);
 			gIds.put(query, allGiHitsOfOneQuery);
-		}			
+		}
 	}//getAccessionIds
 	
 	/**
@@ -373,7 +373,7 @@ public class WebInterrogator{
 			int queryNameEnd = annotationsString.indexOf(" ");
 			String query = annotationsString.substring(0, queryNameEnd);
 			query = query.trim();
-			System.out.println("trimmed query: " + query);
+//System.out.println("trimmed query: " + query);
 			int goBegin = annotationsString.indexOf("GO:");
 			String afterGoBegin = annotationsString.substring(goBegin);
 			//System.out.println("afterGoBegin: " + afterGoBegin + "length: " + afterGoBegin.length());
