@@ -7,11 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
@@ -21,19 +19,15 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.SessionNotFoundException;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
-
-import protein.Protein;
-import utils.ThreadLogSingleLock;
 
 import com.google.common.base.Function;
 
 import ThreadPools.PriorityRunnable;
 import ThreadPools.TheSinglePriorityThreadPool;
+import protein.Protein;
 
 /**
  * Processes a single http link (accession) corresponding to a putative match returned 
@@ -84,11 +78,11 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 	 * @param A StringBuilder "region" to be set by the thread naming the expression point if found or "not found" otherwise.  
 	 * This is effectively a return value for the thread made a parameter so as to use the default run method pattern.
 	 */
-	@Override
 	public void run() throws org.openqa.selenium.WebDriverException{
 		String foundRegion = "not found";
 		List<WebElement> featureElements = null;
 		WebElement inputTextFeildElement = null;
+		String geckoPathStr = "/home/steve/eclipse-workspace/geckodriver";
 		String proteinPageUrl = "http://www.ncbi.nlm.nih.gov/protein/";
 		String genbankText = "";
 		boolean gotGenebank = false;
@@ -131,7 +125,10 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 		//synchronized(socketLock){
 System.out.println("before driver instantion");
 		//driver = new FirefoxDriver();
-		driver = new FirefoxDriver(prof);
+		//driver = new FirefoxDriver(prof);
+		System.setProperty("webdriver.gecko.driver", geckoPathStr);
+		driver = new FirefoxDriver();
+		driver.navigate().to(proteinPageUrl);
 System.out.println("after driver instantion");
 			//driver = forceInit();
 			//driver.open();
@@ -218,15 +215,22 @@ System.out.println("after driver instantion");
 		
 		//get and process genebank text for the protein accession string corresponds to
 		//String source = driver.getPageSource();
-		doGenbank():		
+		doGenbank(driver);		
 	}//run
 	
-	public void doGenbank() {
+	public void doGenbank(final WebDriver driver) {
 		final Wait<WebDriver> waitingDriver = new FluentWait<WebDriver>(driver)
 			       .withTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
 			       .pollingEvery(5, java.util.concurrent.TimeUnit.SECONDS);
-		
+		boolean gotGenebank = false;
+		String foundRegion = "not found";
+		List<WebElement> featureElements = null;
+		WebElement inputTextFeildElement = null;
+		long threadId = Thread.currentThread().getId();
+		String threadName = Thread.currentThread().getName();
+		PrintWriter threadLogWriter = null;
 		WebElement genbank = null;
+		String genbankText = "";
 		int errorCount = 0;
 		boolean doneGenebank = false;
 		while((errorCount < 5) && (!doneGenebank)){
@@ -671,7 +675,7 @@ System.out.println("Thread " + threadId + " after sequence load");
 		try{
 			driver.getTitle();
 			return false;
-		} catch (SessionNotFoundException snfe ) {
+		} catch (Exception e ) {
 			return true;
 		}//catch
 	}//driverHasQuit

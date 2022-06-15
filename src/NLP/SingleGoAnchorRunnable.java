@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.NoSuchElementException;
@@ -20,8 +18,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.SessionNotFoundException;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
@@ -29,7 +25,6 @@ import com.google.common.base.Function;
 
 import ThreadPools.PriorityRunnable;
 import protein.Protein;
-import utils.ThreadLogSingleLock;
 
 /**
  * Processes a link to either an AmiGO or classic GO web page to extract GO 
@@ -64,10 +59,11 @@ public class SingleGoAnchorRunnable extends PriorityRunnable{
 		this.TypeOfGoLookup = "";
 		this.threadLogFile = threadLogFile;
 		this.debug = debug;
+		String geckoPathStr = "/home/steve/eclipse-workspace/geckodriver";
 	}
 	
-	@Override	
 	public void run () throws org.openqa.selenium.WebDriverException{
+		
 		final String amiGoTextClassName = "name";
 		final String quickGoAnnotationRowOddName = "annotation-row-odd";
 		final String quickGoAnnotationRowEvenName = "annotation-row-even";
@@ -133,7 +129,9 @@ public class SingleGoAnchorRunnable extends PriorityRunnable{
 		//Object socketLock = new Object();
 		//synchronized(socketLock){
 		//driver = new FirefoxDriver();
-		driver = new FirefoxDriver(prof);
+		//driver = new FirefoxDriver(prof);
+		System.setProperty("webdriver.gecko.driver", "geckoPathStr");
+		driver = new FirefoxDriver();
 			//driver = forceInit();
 			//driver = new FirefoxDriverWrapper();
 		//}//end synch block
@@ -324,7 +322,7 @@ public class SingleGoAnchorRunnable extends PriorityRunnable{
 		try{
 			driver.getTitle();
 			return false;
-		} catch (SessionNotFoundException snfe ) {
+		} catch (Exception e ) {
 			return true;
 		}//catch
 	}//driverHasQuit
