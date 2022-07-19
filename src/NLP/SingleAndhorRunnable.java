@@ -17,11 +17,11 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.Keys;
 
 import com.google.common.base.Function;
 
@@ -37,7 +37,7 @@ import protein.Protein;
  * expressed according to this accession or "not found" if no region data is mined
  * for this accession.
  */
-public class SingleAnchorLinkRunnable extends PriorityRunnable{
+public class SingleAndhorRunnable extends PriorityRunnable{
 	
 	//public String processAnchorLink(Protein currentProtien, String accession, Map<String, String>GoAnnotationLocations, 
 	//File outFile, boolean firstDFLink, boolean debug) throws org.openqa.selenium.WebDriverException{
@@ -53,7 +53,7 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 	private boolean firstDFLink;
 	private boolean debug;
 	
-	public SingleAnchorLinkRunnable(Protein currentProtien, String accession, StringBuilder region, Map<String, String>GoAnnotationLocations, 
+	public SingleAndhorRunnable(Protein currentProtien, String accession, StringBuilder region, Map<String, String>GoAnnotationLocations, 
 			File outFile, File threadLogFile, boolean firstDFLink, int priority, boolean debug){
 		this.setPriority(priority);
 		this.currentProtien = currentProtien;
@@ -82,8 +82,8 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 		String foundRegion = "not found";
 		List<WebElement> featureElements = null;
 		WebElement inputTextFeildElement = null;
-		String geckoPathStr = "/home/steve/eclipse-workspace/geckodriver";
-		String proteinPageUrl = "http://www.ncbi.nlm.nih.gov/protein/";
+		String geckoPathStr = "/usr/bin/chromedriver";
+		String proteinPageUrl = "https://www.ncbi.nlm.nih.gov/protein/";
 		String genbankText = "";
 		boolean gotGenebank = false;
 		
@@ -103,36 +103,12 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 			threadLogWriter.close();
 		}//synchronized
 		System.out.println("Thread Id: " + threadId + " with thread name: " + threadName + " begins run method on accession: " + accession);
-		//starting more than firefox driver instance at a time can result in socket lock
-		//also manually force re-init of driver to prevent hanging attachment of old driver
-		//to port until garbage collection.
-		//see http://code.google.com/p/selenium/issues/detail?id=5061
-		//see http://stackoverflow.com/questions/16140865/unable-to-bind-to-locking-port-7054-within-45000-ms
-		//fixed by new selenium release
 		final WebDriver driver;
-		//final FirefoxDriverWrapper driver = new FirefoxDriverWrapper();
-		
-		//fix for new firefox problem...startpage private browsing
-		//ProfilesIni profile = new ProfilesIni();
-		FirefoxProfile prof = new FirefoxProfile();
-		//FirefoxProfile prof = profile.getProfile("default");
-		//prof.setPreference("browser.startup.homepage", proteinPageUrl);
-		//prof.setPreference("startup.homepage_welcome_url", proteinPageUrl);
-		//prof.setPreference("startup.homepage_welcome_url.additional", proteinPageUrl);
-		prof.setPreference("xpinstall.signatures.required", false);
-		prof.setPreference("toolkit.telemetry.reportingpolicy.firstRun", false);
-		//Object socketLock = new Object();
-		//synchronized(socketLock){
-System.out.println("before driver instantion");
-		//driver = new FirefoxDriver();
-		//driver = new FirefoxDriver(prof);
+System.out.println("before chrome driver instantion");
 		System.setProperty("webdriver.gecko.driver", geckoPathStr);
-		driver = new FirefoxDriver();
-		driver.navigate().to(proteinPageUrl);
-System.out.println("after driver instantion");
-			//driver = forceInit();
-			//driver.open();
-		//}//end synch block
+		driver = new ChromeDriver();
+		//driver.navigate().to(proteinPageUrl);
+System.out.println("after chrome driver instantion");
 		
 		//get protein page
 		boolean done = true;
@@ -147,6 +123,7 @@ System.out.println("after driver instantion");
 					public WebElement apply(WebDriver diver){
 						return driver.findElement(By.name("term"));
 						}});
+System.out.println("found input text element: " + inputTextFeildElement.getText());
 			}
 			
 			catch(NoSuchElementException nsee){
@@ -163,34 +140,46 @@ System.out.println("after driver instantion");
 								System.out.println("error opening file for append: " + ioe.getMessage());
 								ioe.printStackTrace();
 							}//catch
+System.out.println(" input text element NOT FOUND ");
 							threadLogWriter.println("Thread Id: " + threadId + " with thread name: " + threadName + " fails to find input element by name or id to put accession: " + accession);
 							threadLogWriter.flush();
 							threadLogWriter.close();
 						}//synchronized
+System.out.println("done marked false nsee");
 						done = false;
 					}//catch nsee2
 				}//catch nsee
 			}
 			catch(ElementNotVisibleException enve){
+				System.out.println("done marked false invisible");
 				done = false;
 			}
 		}while(!done);
 		
 		//enter accession string into protein page search box and submit query
 		int inputTextFeildCounter = 0;
+System.out.println("B/F WHILE!!!!!! " + driver.getCurrentUrl() + " to match: " + proteinPageUrl);
 		while(driver.getCurrentUrl().compareToIgnoreCase(proteinPageUrl) == 0){
+System.out.println("IN WHILE!!!with url: " + driver.getCurrentUrl());
 			inputTextFeildCounter++;
+System.out.println("before sendkeys if");
 			if(inputTextFeildElement.getAttribute("value").compareToIgnoreCase(accession) != 0){
-				inputTextFeildElement.sendKeys(accession);
+System.out.println("before sendkeys with value: " + inputTextFeildElement.getAttribute("value") + 
+		" to match accession: " + accession);
+				inputTextFeildElement.sendKeys(accession);		
+System.out.println("after sendkeys contents: " + inputTextFeildElement.getAttribute("value") + " to match accession: " + accession);
 			}//fill input text field if not yet filled with accession value
 			//invoke slight delay to allow sending keys to complete
+System.out.println("before submit count is: " + inputTextFeildCounter);
+			inputTextFeildElement.submit();
+			//inputTextFeildElement.sendKeys(Keys.RETURN);
+System.out.println("submited input text element with data: " + inputTextFeildElement.getAttribute("value"));
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException ie) {
 				System.out.println("InterruptedException: " + ie.getMessage());
 				ie.printStackTrace();
 			}
-			inputTextFeildElement.submit();
 			//didn't work first time...make note of this in the threadlog
 			if(inputTextFeildCounter > 1){ 
 				synchronized(threadLogFile){
@@ -205,6 +194,18 @@ System.out.println("after driver instantion");
 					threadLogWriter.close();
 				}//synchronized
 			}//if(inputTextFeildCounter > 1)
+			int waitsplashCount = 0;
+			while(driver.getCurrentUrl().compareToIgnoreCase(proteinPageUrl) == 0) {
+				//wait while still on splash
+				try {
+					Thread.sleep(1000);
+					System.out.println("wait for navigate from splash countt is: " + waitsplashCount);
+				} catch (InterruptedException ie) {
+					System.out.println("InterruptedException: " + ie.getMessage());
+					ie.printStackTrace();
+				}
+				waitsplashCount++;
+			}//while wait on splash
 		}//while driver still on splash page
 		try {
 			Thread.sleep(5000);
@@ -215,14 +216,17 @@ System.out.println("after driver instantion");
 		
 		//get and process genebank text for the protein accession string corresponds to
 		//String source = driver.getPageSource();
+System.out.println("b/f doGenbank call");		
 		doGenbank(driver);		
 	}//run
 	
 	public void doGenbank(final WebDriver driver) {
+System.out.println("in doGenbank gotGenbank");
 		final Wait<WebDriver> waitingDriver = new FluentWait<WebDriver>(driver)
 			       .withTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
 			       .pollingEvery(5, java.util.concurrent.TimeUnit.SECONDS);
 		boolean gotGenebank = false;
+System.out.println("in doGenbank gotGenbank: " + gotGenebank);
 		String foundRegion = "not found";
 		List<WebElement> featureElements = null;
 		WebElement inputTextFeildElement = null;
@@ -601,7 +605,7 @@ System.out.println("Thread " + threadId + " after sequence load");
 							threadLogWriter.flush();
 							threadLogWriter.close();
 						}//synchronized
-						processGoAnchor(currentProtien, currentGoAnchorURLString, currentGoAnchorString, GoAnnotationLocations, "GO", threadLogFile, debug);		
+						//processGoAnchor(currentProtien, currentGoAnchorURLString, currentGoAnchorString, GoAnnotationLocations, "GO", threadLogFile, debug);		
 					}//if goAssensionTextList.contains(currentGoAnchorString
 				}//currentGoAnchorURLString != null
 			}//while(goAnchorsLiter.hasNext())

@@ -37,7 +37,7 @@ import protein.Protein;
  * @param TypeOfGoLookup identifies the link as a classic GO anchor or an AmiGO anchor. 
  * @param debug	Verbose flag.
  */
-public class SingleGoAnchorRunnable extends PriorityRunnable{
+public class SingleGoAnchorLinkRunnable extends PriorityRunnable{
 
 	private Protein currentProtein = null;
 	private String url = "";
@@ -49,7 +49,7 @@ public class SingleGoAnchorRunnable extends PriorityRunnable{
 	
 	//public void processGoAnchor(Protein currentProtein, String url, String currentGoAnchorString, 
 	//		Map<String, String> GoAnnotationLocations, String TypeOfGoLookup, boolean debug) throws org.openqa.selenium.WebDriverException{
-	public SingleGoAnchorRunnable(Protein currentProtein, String url, String currentGoAnchorString, 
+	public SingleGoAnchorLinkRunnable(Protein currentProtein, String url, String currentGoAnchorString, 
 			Map<String, String> GoAnnotationLocations, /*String TypeOfGoLookup,*/ File threadLogFile, int priority, boolean debug) {
 		this.setPriority(priority);
 		this.currentProtein = currentProtein;

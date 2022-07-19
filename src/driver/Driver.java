@@ -36,7 +36,7 @@ public class Driver {
 			if (inputFileInt == -1) {
 				System.out.println("you have chosen to run a test");
 			}
-			if(inputFileInt < 0 || inputFileInt > 74){
+			else if(inputFileInt < 0 || inputFileInt > 74){
 				throw new NumberFormatException("integer entered is not in input range");
 			}//if out of range
 			inputFileNumber = inputFileInt;

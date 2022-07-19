@@ -20,14 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
-import ThreadPools.PriorityRunnable;
-import ThreadPools.PriorityFuture;
 import ThreadPools.TheSinglePriorityThreadPool;
 import protein.Protein;
 import utils.FileCharReader;
@@ -87,9 +83,8 @@ public class WebInterrogator{
 			outFile = new File ("/home/steve/Desktop/ProteinPlacer3/data/out.txt");
 			threadLogFile = new File("/home/steve/Desktop/ProteinPlacer3/data/threadLog.txt");
 			textOutFile = new File("/home/steve/Desktop/ProteinPlacer3/data/textOutOfProteins.txt");
-			blastDataInFile = new File((outTextFileBaseString + "1" + "/textOutOfProtiens")
-					+ "_" + "0" + ".txt");
-			blastAnnotationsInFile = new File(proteinDataInFileString + "1" + "/annot_Seqs_" + "0" + ".txt");
+			blastDataInFile = new File(proteinDataInFileString + 0 + "/blastResult_" + 0 + ".xml");
+			blastAnnotationsInFile = new File(proteinDataInFileString + "0" + "/annot_Seqs_" + "0" + ".txt");
 		}//if
 		else {
 			inSequencesFile = new File (inSequencesFileBaseString + inputFileNumber + ".txt");

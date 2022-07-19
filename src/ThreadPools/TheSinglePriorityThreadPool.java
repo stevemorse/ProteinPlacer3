@@ -17,13 +17,16 @@ import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.WebDriverException;
 
 import NLP.SingleAnchorLinkRunnable;
+import NLP.SingleAndhorRunnable;
+import NLP.SingleGoAnchorLinkRunnable;
 import NLP.SingleGoAnchorRunnable;
 import protein.Protein;
 
 public class TheSinglePriorityThreadPool {
 	static ExecutorService theOnlyPool = null;
 	private static volatile TheSinglePriorityThreadPool instance = null;
-	private static final int THREAD_POOL_SIZE = 5;
+	//private static final int THREAD_POOL_SIZE = 5;
+	private static final int THREAD_POOL_SIZE = 2;
 	private static final int ANCHOR_THREAD_PRIORITY = 2;
 	private static final int GO_ANCHOR_THREAD_PRIORITY = 1;
 	private static int numAnchorLinksSpwned;
@@ -88,7 +91,7 @@ public class TheSinglePriorityThreadPool {
 			Map<String, String> goAnnotationLocations, File outFile, File threadLogFile, boolean firstAccession, boolean debug){
 		try{
 			numAnchorLinksSpwned++;
-			Runnable task = new SingleAnchorLinkRunnable(currentProtien, accession, region,
+			Runnable task = new SingleAndhorRunnable(currentProtien, accession, region,
 					goAnnotationLocations, outFile, threadLogFile, firstAccession, ANCHOR_THREAD_PRIORITY, debug);
 			
 			tasks.add(makePriorityRunnableIntoPriorityCallable((PriorityRunnable) task));
@@ -179,7 +182,7 @@ public class TheSinglePriorityThreadPool {
 	private static Callable makePriorityRunnableIntoPriorityCallable(final PriorityRunnable currentRunnable){
 		
 		return new PriorityCallable(currentRunnable.getPriority()) {
-			@Override
+			//@Override
 			public Void call(){
 				currentRunnable.run();
 				return null;
@@ -189,7 +192,7 @@ public class TheSinglePriorityThreadPool {
 	
 	private static Runnable convertToRunnable(final Callable callable){
 		return new Runnable(){
-				@Override
+				//@Override
 				public void run(){
 					try{
 						callable.call();
