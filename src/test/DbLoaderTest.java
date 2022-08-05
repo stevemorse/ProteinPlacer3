@@ -1,5 +1,7 @@
 package test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +31,15 @@ public class DbLoaderTest {
 		accessions.add("AE003849");
 		accessions.add("AE002565");
 		accessions.add("AE002162");
+		accessions.add("AB000100");
+		accessions.add("AB000106");
+		accessions.add("AB020092");
+		accessions.add("AB020093");
+		accessions.add("AB000111");
 	    loader.setStartFileNum(1);
 	    loader.setEndFileNum(1);
 	    loader.setAllAccessionIds(accessions);
 	    loader.load();
+	    //assertEquals(loader.getLoadedaccessionInFile(),accessions.size());
 	}
 }

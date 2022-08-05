@@ -13,11 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class GenebankDBLoader {
 	static String inBaseStr = "/home/steve/genebankData/gbbct";
+	static String inTestStr = "/home/steve/genebankData/test.txt";
+	String inStr = "";
+	boolean test = false;
+	int loadedaccessionInFile = 0;
 	int startFileNum = 1;
-	int endFileNum = 1;
+	int endFileNum = 789;
 	List<String> allAccessionIds = null;
 	
 	public int getStartFileNum() {
@@ -38,6 +43,18 @@ public class GenebankDBLoader {
 	public void setAllAccessionIds(List<String> allAccessionIds) {
 		this.allAccessionIds = allAccessionIds;
 	}
+	public int getLoadedaccessionInFile() {
+		return loadedaccessionInFile;
+	}
+	public void setLoadedaccessionInFile(int loadedaccessionInFile) {
+		this.loadedaccessionInFile = loadedaccessionInFile;
+	}
+	public boolean isTest() {
+		return test;
+	}
+	public void setTest(boolean test) {
+		this.test = test;
+	}
 	public GenebankDBLoader() {}
 		
 	public static void main(String[] args) {
@@ -51,70 +68,75 @@ public class GenebankDBLoader {
 		}//if
 		System.out.println("loaded " + allAccessionIds.size() + " Accessions");
 		for(int fileNum = startFileNum; fileNum <= endFileNum; fileNum++) {
-		long startTime = System.nanoTime();
-		String inStr = inBaseStr + fileNum + ".seq";		
-		
-		int accessionInFile = 0;
-		int loadedaccessionInFile = 0;
-		String accessionStr = "";
-		Connection conn = null;
-	    PreparedStatement preparedStatement = null;
-		File inFile = new File(inStr);
-		char[] dataBuffer = new char[(int) inFile.length()];
-		
-		try {
-			FileReader fileReader = new FileReader(inFile);
-			fileReader.read(dataBuffer);
-			fileReader.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("File Not Found: " + e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("IOException: " + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost/genebank?"
-                            + "user=genebank&password=gene^11^Bank");
-			String genebankStr = new String(dataBuffer);
-			String[] terms = genebankStr.split("LOCUS");
-			accessionInFile = terms.length - 1;
+			long startTime = System.nanoTime();
+			if(test) {
+				inStr = inTestStr;
+				System.out.println("running test");
+			}//if test
+			else {
+				inStr = inBaseStr + fileNum + ".seq";
+			}//if not test		
 			loadedaccessionInFile = 0;
-			for(int termsCount = 1; termsCount < terms.length; termsCount++) {
-				int acessionBegin = terms[termsCount].indexOf("ACCESSION");
-				int acessionEnd = terms[termsCount].indexOf("VERSION");
-				accessionStr = terms[termsCount].substring(acessionBegin + "ACCESSION".length(), acessionEnd);
-				accessionStr = accessionStr.trim();
-				acessionEnd = accessionStr.indexOf(' ');
-				if(acessionEnd != -1) {
-					accessionStr = accessionStr.substring(0, acessionEnd);
+			int accessionInFile = 0;
+			String accessionStr = "";
+			Connection conn = null;
+		    PreparedStatement preparedStatement = null;
+			File inFile = new File(inStr);
+			char[] dataBuffer = new char[(int) inFile.length()];
+			
+			try {
+				FileReader fileReader = new FileReader(inFile);
+				fileReader.read(dataBuffer);
+				fileReader.close();
+			} catch (FileNotFoundException e) {
+				System.out.println("File Not Found: " + e.getMessage());
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.out.println("IOException: " + e.getMessage());
+				e.printStackTrace();
+			}
+			
+			try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+				conn = DriverManager.getConnection("jdbc:mysql://localhost/genebank?"
+	                            + "user=genebank&password=gene^11^Bank");
+				String genebankStr = new String(dataBuffer);
+				String[] terms = genebankStr.split("LOCUS");
+				accessionInFile = terms.length - 1;
+				for(int termsCount = 1; termsCount < terms.length; termsCount++) {
+					int acessionBegin = terms[termsCount].indexOf("ACCESSION");
+					int acessionEnd = terms[termsCount].indexOf("VERSION");
+					accessionStr = terms[termsCount].substring(acessionBegin + "ACCESSION".length(), acessionEnd);
 					accessionStr = accessionStr.trim();
-				}//if
-				System.out.println("Accession is: " + accessionStr);
-				//System.out.println("length of text is: " + terms[termsCount].length());
-				//System.out.println("indexOf /s: " + acessionEnd);
-				if(isInList(allAccessionIds, accessionStr)){
-					System.out.println("Accession loaded: " + accessionStr);
-					preparedStatement = conn.prepareStatement("insert into  genebank values (?, ?)");
-					preparedStatement.setString(1, accessionStr);
-					preparedStatement.setString(2, terms[termsCount]);
-					preparedStatement.executeUpdate();
-					loadedaccessionInFile++;
-				}//if isInList
-			}//for
-		} catch (Exception e) {
-			System.out.println("Exception: " + e.getMessage());
-        } finally {
-            //close();
-        }//try/catch
-        System.out.println("processed file: " + inStr);
-        System.out.println("Accessions in file: " + accessionInFile);
-        System.out.println("Accessions loaded from file : " + loadedaccessionInFile);
-        long endTime = System.nanoTime();
-        long runTime = endTime - startTime;
-        System.out.println("in " + runTime / 1000000000 + " seconds");
+					acessionEnd = accessionStr.indexOf(' ');
+					if(acessionEnd != -1) {
+						accessionStr = accessionStr.substring(0, acessionEnd);
+						accessionStr = accessionStr.trim();
+						accessionStr.replaceAll("\\p{C}", ""); 
+					}//if
+					//System.out.println("Accession is: " + accessionStr);
+					//System.out.println("length of text is: " + terms[termsCount].length());
+					//System.out.println("indexOf /s: " + acessionEnd);
+					if(isInList(allAccessionIds, accessionStr)){
+						System.out.println("Accession loaded: " + accessionStr);
+						preparedStatement = conn.prepareStatement("insert into  genebank values (?, ?)");
+						preparedStatement.setString(1, accessionStr);
+						preparedStatement.setString(2, terms[termsCount]);
+						preparedStatement.executeUpdate();
+						loadedaccessionInFile++;
+					}//if isInList
+				}//for
+			} catch (Exception e) {
+				System.out.println("Exception: " + e.getMessage());
+	        } finally {
+	            //close();
+	        }//try/catch
+	        System.out.println("processed file: " + inStr);
+	        System.out.println("Accessions in file: " + accessionInFile);
+	        System.out.println("Accessions loaded from file : " + loadedaccessionInFile);
+	        long endTime = System.nanoTime();
+	        long runTime = endTime - startTime;
+	        System.out.println("in " + runTime / 1000000000 + " seconds");
 		}//for fileNum
 	}//load
 	
@@ -164,8 +186,9 @@ public class GenebankDBLoader {
 			int accessionBegin = hits[hitCount].indexOf("<Hit_accession>") + "<Hit_accession>".length();
 			int accessionEnd = hits[hitCount].indexOf("</Hit_accession>");
 			String accession = hits[hitCount].substring(accessionBegin, accessionEnd);
+			accession = accession.replaceAll("\\p{C}", ""); 
 			allAccessionInOneBlastFile.add(accession);
-			System.out.println("loaded accessioh: " + accession);
+			System.out.println("loaded accession: " + accession);
 		}//for
 		return allAccessionInOneBlastFile;		
 	}//getAllAccessionInOneBlastFile
