@@ -14,7 +14,7 @@ import java.util.ListIterator;
  * @author steve
  *
  */
-public class seqSizeCounter {
+public class SeqSizeCounter {
 	static int minSize = 100000000;
 	static int maxSize = 0;
 	static int totalNum = 0;

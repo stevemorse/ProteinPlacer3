@@ -110,35 +110,14 @@ public class SingleAnchorLinkRunnable extends PriorityRunnable{
 			threadLogWriter.close();
 		}//synchronized
 		System.out.println("Thread Id: " + threadId + " with thread name: " + threadName + " begins run method on accession: " + accession);
-		//starting more than firefox driver instance at a time can result in socket lock
-		//also manually force re-init of driver to prevent hanging attachment of old driver
-		//to port until garbage collection.
-		//see http://code.google.com/p/selenium/issues/detail?id=5061
-		//see http://stackoverflow.com/questions/16140865/unable-to-bind-to-locking-port-7054-within-45000-ms
-		//fixed by new selenium release
-		final WebDriver driver;
-		//final FirefoxDriverWrapper driver = new FirefoxDriverWrapper();
-		
-		//fix for new firefox problem...startpage private browsing
-		//ProfilesIni profile = new ProfilesIni();
+		final WebDriver driver;		
 		FirefoxProfile prof = new FirefoxProfile();
-		//FirefoxProfile prof = profile.getProfile("default");
-		//prof.setPreference("browser.startup.homepage", proteinPageUrl);
-		//prof.setPreference("startup.homepage_welcome_url", proteinPageUrl);
-		//prof.setPreference("startup.homepage_welcome_url.additional", proteinPageUrl);
 		prof.setPreference("xpinstall.signatures.required", false);
 		prof.setPreference("toolkit.telemetry.reportingpolicy.firstRun", false);
-		//Object socketLock = new Object();
-		//synchronized(socketLock){
 System.out.println("before driver instantion");
 		System.setProperty("webdriver.gecko.driver", geckoPathStr);
 		driver = new FirefoxDriver();
-		//driver = new FirefoxDriver(prof);
 System.out.println("after driver instantion");
-			//driver = forceInit();
-			//driver.open();
-		//}//end synch block
-		
 		//get protein page
 		boolean done = true;
 		do{
