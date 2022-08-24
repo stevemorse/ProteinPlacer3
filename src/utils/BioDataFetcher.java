@@ -26,6 +26,8 @@ public class BioDataFetcher {
 	private List<String> uniqueAccessions = null;
 	//private String uniqueAccessionsFileName = "/home/steve/Desktop/ProteinPlacer3/data/uniqueAccessions.xml";
 	private String resourceFileName = "resources/res.json";
+	boolean firstAccess = false;
+	boolean lastAccess = false;
 	
 	public int getInputFileNumber() {
 		return inputFileNumber;
@@ -70,7 +72,10 @@ public class BioDataFetcher {
 	}//getFileNum
 	
 	public void load(int fileNum) {
+		//set first accession tag
+		firstAccess = true;
 		List<String> allAccessions = getallAccessionIds(1,fileNum);
+		List<String> processableAccessions = new ArrayList<String>();
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
 		String uniqueAccessionsFileName = fetcher.getResources("uniqueAccessionsFileName");
 		uniqueAccessions = readUniqueAccessions(uniqueAccessionsFileName);
@@ -81,16 +86,25 @@ public class BioDataFetcher {
 			System.out.println("fetching acsccession: " + count++ + " of: " + numAccessions);
 			String currentStr = allAccessionsIter.next();
 			if(!isInList(uniqueAccessions,currentStr)) {
-				this.doPost(currentStr + ".1", fileNum); //add version number
+				//this.doPost(currentStr + ".1", fileNum); //add version number
+				processableAccessions.add(currentStr);
 				uniqueAccessions.add(currentStr);
 			}//if unique accession
-		}//while
+		}//while allAccessionsIter
 		writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
+		ListIterator<String> processableAccessionsIter = processableAccessions.listIterator();
+		while(processableAccessionsIter.hasNext()) {
+			String currentStr = processableAccessionsIter.next();
+			if(!processableAccessionsIter.hasNext()) {lastAccess = true;}//set last accession tag on last
+			this.doPost(currentStr + ".1", fileNum); //add version number
+		}//while
 	}//load
 	
 	public void doPost(String accessionStr, int fileNum) {
-		//String outFileName = "/home/steve/Desktop/ProteinPlacer3/data/features" + fileNum + ".txt";
-		String outFileName = "/home/steve/Desktop/ProteinPlacer3/data/text" + fileNum +".txt";
+		boolean firstAccess = false;
+		ResourceFetcher fetcher = ResourceFetcher.getInstance();
+		//String outFileName = fetcher.getResources("featuresOutBaseStr") + fileNum + ".txt";
+		String outFileName = fetcher.getResources("textOutBaseStr") + fileNum +".txt";
 		CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi");
         try {
@@ -110,12 +124,21 @@ public class BioDataFetcher {
                     response.getEntity().getContent()));
             String featureStr = "";
             String line = "";
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outFileName, true));
+            if(firstAccess) {
+            	writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "\n");
+            	writer.write("<ENTRIES>");
+            	firstAccess = false;
+            }//if firstAccess
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
                 featureStr = featureStr + line + "\n";
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outFileName, true));
-            writer.append(featureStr + "\n");       
+            }//while
+            writer.append("ACCESSION" + accessionStr + "</ACCESSION>"  + "\n");
+            writer.append("<ENTRY>" + "\n" + featureStr + "\n" + "</ENTRY>" + "\n");
+            if(lastAccess) {
+            	writer.write("</ENTRIES>");
+            }//if last accession
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

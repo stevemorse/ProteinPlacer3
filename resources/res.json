@@ -1,3 +1,5 @@
 {
-	"uniqueAccessionsFileName" : "/home/steve/Desktop/ProteinPlacer3/data/uniqueAccessions.xml"
+	"uniqueAccessionsFileName" : "/home/steve/Desktop/ProteinPlacer3/data/uniqueAccessions.xml",
+	"featuresOutBaseStr" : "/home/steve/Desktop/ProteinPlacer3/data/features",
+	"textOutBaseStr" : "/home/steve/Desktop/ProteinPlacer3/data/text"
 }
