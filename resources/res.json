@@ -1,0 +1,6 @@
+{
+	"uniqueAccessionsFileName" : "/home/steve/Desktop/ProteinPlacer3/data/uniqueAccessions.xml",
+	"featuresOutBaseStr" : "/home/steve/Desktop/ProteinPlacer3/data/features",
+	"textOutBaseStr" : "/home/steve/Desktop/ProteinPlacer3/data/text",
+	"proteinDataInFileString" : "/home/steve/Desktop/ProteinPlacer3/data/Blast2GoXML/results_"
+}

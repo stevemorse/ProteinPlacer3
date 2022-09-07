@@ -8,8 +8,22 @@ public class BioDataFetcherDriver {
 			fetcher.load(count);
 		}//for all blast data files
 		*/
+		fetcher.reFetch(0);
+
+		fetcher.packAccessionLists(0);
+		System.out.println("processableAccessions: ");
+		System.out.println(fetcher.getProcessableAccessions().size());
+		System.out.println(fetcher.getProcessableAccessions());
+		/*
+		System.out.println("uniqueAccessions: ");
+		System.out.println(fetcher.getUniqueAccessions().size());
+		System.out.println(fetcher.getUniqueAccessions());
+		*/
 		fetcher.getProcessedAccessions(0);
-		System.out.println(fetcher.getProcessedAccessions());
+		System.out.println("processedAccessions: ");
+		System.out.println(fetcher.getProcessedAccessions().size());
+		System.out.println(fetcher.getProcessedAccessions());		
 	}//main
+	
 	
 }//class BioDataFetcherDriver
