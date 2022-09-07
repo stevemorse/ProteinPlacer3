@@ -63,21 +63,13 @@ int inputFileNumber = 0;
 		List<String> allAccessions = getallAccessionIds(1,fileNum);
 		ListIterator<String> allAccessionsIter = allAccessions.listIterator();
 		int numAccessions = allAccessions.size();
-		StringBuilder massAccessionsStr = "";
+		String massAccessionsStr = "";
 		int count = 1;
 		while(allAccessionsIter.hasNext()) {
 			//System.out.println("fetching acsccession: " + count++ + " of: " + numAccessions);
 			String currentStr = allAccessionsIter.next();
-			if((count % 1000) == 0) {
-				massAccessionsStr = massAccessionsStr + "currentStr" + ".1,";
-				System.out.println("massAccessionsStr: " + massAccessionsStr);
-			}
-			if((count % 1000) == 0) {
-				massAccessionsStr = massAccessionsStr + "currentStr" + ".1";
-				System.out.println("fetching: " + massAccessionsStr);
-				massAccessionsStr = "";
-				//this.doPost(massAccessionsStr, fileNum); //add version number
-			}
+			massAccessionsStr = massAccessionsStr + "currentStr" + ".1,";
+			System.out.println("massAccessionsStr: " + massAccessionsStr);
 		}//while
 		System.out.println("fetching: " + massAccessionsStr);
 		//this.doPost(massAccessionsStr, fileNum); //add version number

@@ -8,9 +8,8 @@ public class BioDataFetcherDriver {
 			fetcher.load(count);
 		}//for all blast data files
 		*/
-		fetcher.reFetch(0);
-
 		fetcher.packAccessionLists(0);
+		fetcher.reFetch(0);
 		System.out.println("processableAccessions: ");
 		System.out.println(fetcher.getProcessableAccessions().size());
 		System.out.println(fetcher.getProcessableAccessions());
