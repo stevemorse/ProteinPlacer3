@@ -11,8 +11,8 @@ import java.util.List;
 public class ResourceFetcher {
 	
     private static ResourceFetcher instance = null;
-    private String resourcefileName = "resources/res.json";
-    private ResourceFetcher() {}
+    private String resourcefileName = "";
+    private ResourceFetcher() {resourcefileName = "/home/steve/git/ProteinPlacer3/resources/res.json";}
     
     public static ResourceFetcher getInstance() {
 	    if (instance == null) {
@@ -29,7 +29,7 @@ public class ResourceFetcher {
             StringBuilder value = new StringBuilder();
             List<String> lines = null;
             ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource(resourcefileName).getFile());             
+            File file = new File(resourcefileName);             
             try {
                     String content = new String(Files.readAllBytes(file.toPath()));
                     String [] arrLines = content.split(",");
@@ -48,7 +48,7 @@ public class ResourceFetcher {
                             value.append(pair[1].trim().replaceAll("\"", "").replaceAll("}", "").replaceAll("\r|\n", ""));
                     }//if key in line
             });
-            System.out.println("resource file: " + resourcefileName + " key: " + key + " value returned: " + value);
+            //System.out.println("resource file: " + resourcefileName + " key: " + key + " value returned: " + value);
             return value.toString();
     }//getResources
 

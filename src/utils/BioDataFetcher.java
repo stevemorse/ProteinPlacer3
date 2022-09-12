@@ -117,14 +117,14 @@ public class BioDataFetcher {
 		int numAccessions = allAccessions.size();
 		int count = 1;
 		while(allAccessionsIter.hasNext()) {
-			//System.out.println("fetching acsccession: " + count++ + " of: " + numAccessions);
+			//System.out.println("fetching accession: " + count++ + " of: " + numAccessions);
 			String currentStr = allAccessionsIter.next();
 			if(!isInList(uniqueAccessions,currentStr)) {
 				processableAccessions.add(currentStr);
 				uniqueAccessions.add(currentStr);
 			}//if unique accession
 		}//while allAccessionsIter
-		//writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
+		writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
 	}//packAccessionLists
 	
 	public void doPost(String accessionStr, int fileNum) {
