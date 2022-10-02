@@ -105,6 +105,9 @@ public class BioDataFetcher {
 			if(!processableAccessionsIter.hasNext()) {lastAccess = true;}//set last accession tag on last
 			this.doPost(currentStr + ".1", fileNum); //add version number
 		}//while
+		ResourceFetcher fetcher = ResourceFetcher.getInstance();
+		String uniqueAccessionsFileName = fetcher.getResources("uniqueAccessionsFileName");
+		writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
 	}//load
 	
 	public void packAccessionLists(int fileNum) {
@@ -121,10 +124,8 @@ public class BioDataFetcher {
 			String currentStr = allAccessionsIter.next();
 			if(!isInList(uniqueAccessions,currentStr)) {
 				processableAccessions.add(currentStr);
-				uniqueAccessions.add(currentStr);
 			}//if unique accession
 		}//while allAccessionsIter
-		writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
 	}//packAccessionLists
 	
 	public void doPost(String accessionStr, int fileNum) {
@@ -163,6 +164,7 @@ public class BioDataFetcher {
                 	featureStr = featureStr + line + "\n";
                 }//if not begin of file xml tag
             }//while
+            uniqueAccessions.add(accessionStr);
             writer.append("<ACCESSION>" + accessionStr + "</ACCESSION>"  + "\n");
             writer.append("<ENTRY>" + "\n" + featureStr + "\n" + "</ENTRY>" + "\n");
             if(lastAccess) {
@@ -301,11 +303,29 @@ public class BioDataFetcher {
 	
 	public void getProcessedAccessions(int fileNum){
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
-		String fileName = fetcher.getResources("textOutBaseStr") + fileNum +".xml";
 		if(processedAccessions == null) {
 			processedAccessions = new ArrayList<String>();
-		}//if
-		File processedAccessionsFile = new File(fileName);
+		}//if processedAccessions is null
+		if(fileNum == 0) {
+			String[] fileNums = {"0_0","0_1","0_2","0_3","0_4","0_5"};
+			for(int fileCount = 0; fileCount < fileNums.length; fileCount++) {
+				String fileName = fetcher.getResources("textOutBaseStr") + fileNums[fileCount] +".xml";
+				File processedAccessionsFile = new File(fileName);
+				processedAccessions.addAll(getProcessedAccesionsOfOneFile(processedAccessionsFile));
+				System.out.println(" in processedAccessions fileName: " + fileName);
+				System.out.println(processedAccessions.size());
+				System.out.println(processedAccessions);	
+			}//for fileCount
+		}//fileNum 0 treated differently due to size issues
+		else {
+			String fileName = fetcher.getResources("textOutBaseStr") + fileNum +".xml";
+			File processedAccessionsFile = new File(fileName);
+			processedAccessions = getProcessedAccesionsOfOneFile(processedAccessionsFile);
+		}//else not fileNum 0
+	}//getProcessedAccessions
+	
+	public List<String> getProcessedAccesionsOfOneFile(File processedAccessionsFile){
+		List<String> accessionsInFileList = new ArrayList<String>();
 		if(processedAccessionsFile.isFile()) {
 			char[] dataBuffer = new char[(int) processedAccessionsFile.length()];
 			try {
@@ -322,16 +342,17 @@ public class BioDataFetcher {
 			String processedAccessionsFileStr = new String(dataBuffer);
 			String[] accessions = processedAccessionsFileStr.split("<ACCESSION>");
 			for(int accCount = 1; accCount < accessions.length; accCount++) {
-				int endOfOneAccession = accessions[accCount].indexOf(".1</ACCESSION>");
+				int endOfOneAccession = accessions[accCount].indexOf("</ACCESSION>");
 				if(endOfOneAccession != -1) {
 					String oneAccessionStr = accessions[accCount].substring(0, endOfOneAccession);
 					oneAccessionStr = oneAccessionStr.trim();
 					oneAccessionStr = oneAccessionStr.replaceAll("\\p{C}", "");
-					processedAccessions.add(oneAccessionStr);
+					accessionsInFileList.add(oneAccessionStr);
 				}//if
 			}//for all stored accessions
 		}//if processedAccessionsFileStr is file
-	}//getProcessedAccessions
+		return accessionsInFileList;
+	}//getProcessedAccesionsOfOneFile
 	
 	public void reFetch(int FileNum) {
 		boolean done = false;
@@ -347,5 +368,8 @@ public class BioDataFetcher {
 				doPost(currentStr,FileNum);
 			}//while
 		}//while !done
+		ResourceFetcher fetcher = ResourceFetcher.getInstance();
+		String uniqueAccessionsFileName = fetcher.getResources("uniqueAccessionsFileName");
+		writeUniqueAccessions(uniqueAccessions, uniqueAccessionsFileName);
 	}//reFetch
 }//class
