@@ -9,7 +9,6 @@ import java.util.Scanner;
 
 public class LargeEntryFileSplitter {
 	static int fileNum = 0;
-	
 	public static void main(String[] args) {
 		LargeEntryFileSplitter splitter = new LargeEntryFileSplitter();
 		splitter.split(fileNum);
@@ -38,7 +37,7 @@ public class LargeEntryFileSplitter {
 		        	//now test lines and write entries to output file
 		        	StringBuilder entryStrBuilder = new StringBuilder();
 		        	boolean currentEntryDone = false;
-		        	while(!currentEntryDone) {
+		        	while(!currentEntryDone && scanner.hasNextLine()) {
 			        	String line = scanner.nextLine();
 			        	if(firstLine) {
 				        	if(line.compareTo("<?xml version=\"1.0\" encoding=\"UTF-8\"?>") != 0) {
@@ -59,6 +58,7 @@ public class LargeEntryFileSplitter {
 			        	}//else not firstLine of entries
 			        	if(line.compareTo("</ENTRIES>") == 0) {
 			        		rootNodeClosed = true;
+			        		currentEntryDone = true;
 			        	}//if close of xml file root node
 		        	}//while currentEntryDone
 		        	System.out.println("entryCount is: " + entryCount);

@@ -4,11 +4,13 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -190,7 +192,7 @@ public class BioDataFetcher {
 	public List<String> getallAccessionIds (int flag, int fileNum){
 		List<String> allAccessions = new ArrayList<String>();
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
-		proteinDataInFileString = fetcher.getResources(proteinDataInFileString);
+		proteinDataInFileString = fetcher.getResources("proteinDataInFileString");
 		String blastFileStr = 
 				proteinDataInFileString + fileNum + "/blastResult_" + fileNum + ".xml";
 		File currentBlastFile = new File(blastFileStr);
@@ -307,12 +309,10 @@ public class BioDataFetcher {
 			processedAccessions = new ArrayList<String>();
 		}//if processedAccessions is null
 		if(fileNum == 0) {
-			String[] fileNums = {"0_0","0_1","0_2","0_3","0_4","0_5"};
-			for(int fileCount = 0; fileCount < fileNums.length; fileCount++) {
-				String fileName = fetcher.getResources("textOutBaseStr") + fileNums[fileCount] +".xml";
-				File processedAccessionsFile = new File(fileName);
-				processedAccessions.addAll(getProcessedAccesionsOfOneFile(processedAccessionsFile));
-				System.out.println(" in processedAccessions fileName: " + fileName);
+			List<File> files = getFiles(fileNum);
+			for(File file : files) {
+				processedAccessions.addAll(getProcessedAccesionsOfOneFile(file));
+				System.out.println(" in processedAccessions fileName: " + file.getName());
 				System.out.println(processedAccessions.size());
 				System.out.println(processedAccessions);	
 			}//for fileCount
@@ -354,6 +354,20 @@ public class BioDataFetcher {
 		return accessionsInFileList;
 	}//getProcessedAccesionsOfOneFile
 	
+	public List<File> getFiles(int fileNum) {
+		ResourceFetcher fetcher = ResourceFetcher.getInstance();
+		File dir = new File(fetcher.getResources("dataFilesDirectory"));
+		//check for valid directory
+		if (!(dir.exists() && dir.isDirectory())) {
+		  System.out.println("Directory " + dir + " does not exist");
+		}//if not dir
+		FileFilter filter = (file) -> {
+			  return file.getName().endsWith(".xml") && file.getName().contains(fileNum + "_");
+			};
+		File[] files = dir.listFiles(filter);
+		return Arrays.asList(files);
+	}//getFiles
+	
 	public void reFetch(int FileNum) {
 		boolean done = false;
 		while(!done) {
@@ -367,6 +381,10 @@ public class BioDataFetcher {
 				if(!reFetchIter.hasNext()) {lastAccess = true;}//set last accession tag on last
 				doPost(currentStr,FileNum);
 			}//while
+			if(FileNum == 0) {
+				LargeEntryFileSplitter splitter = new LargeEntryFileSplitter();
+				splitter.split(FileNum);
+			}//if FileNum
 		}//while !done
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
 		String uniqueAccessionsFileName = fetcher.getResources("uniqueAccessionsFileName");
