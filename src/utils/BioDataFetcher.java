@@ -9,8 +9,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -117,17 +120,31 @@ public class BioDataFetcher {
 		processableAccessions = new ArrayList<String>();
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
 		String uniqueAccessionsFileName = fetcher.getResources("uniqueAccessionsFileName");
-		uniqueAccessions = readUniqueAccessions(uniqueAccessionsFileName);
+		File f = new File(uniqueAccessionsFileName);
+		if(f.exists()) {
+			uniqueAccessions = readUniqueAccessions(uniqueAccessionsFileName);
+		}//if exists
+		else {
+			List<String> ProcessedAccessions = getProcessedAccessions();
+			uniqueAccessions = ProcessedAccessions;
+		}//else
 		ListIterator<String> allAccessionsIter = allAccessions.listIterator();
 		int numAccessions = allAccessions.size();
 		int count = 1;
+		HashSet<String> processableAccessionsSet = new HashSet<String>();
 		while(allAccessionsIter.hasNext()) {
 			//System.out.println("fetching accession: " + count++ + " of: " + numAccessions);
 			String currentStr = allAccessionsIter.next();
-			if(!isInList(uniqueAccessions,currentStr)) {
-				processableAccessions.add(currentStr);
+			int versionBeginNum = currentStr.indexOf(".1");
+            if(versionBeginNum != -1) {
+            	currentStr = currentStr.substring(0, versionBeginNum);
+            }
+			if(!containsIgnoreCase(new ArrayList<String>(processableAccessionsSet),currentStr)) {
+				processableAccessionsSet.add(currentStr);
 			}//if unique accession
-		}//while allAccessionsIter
+		}//while allAccessionsIter;'
+		processableAccessions.addAll(processableAccessionsSet);
+		System.out.println("found " + processableAccessions.size() + " accessions ");
 	}//packAccessionLists
 	
 	public void doPost(String accessionStr, int fileNum) {
@@ -166,6 +183,11 @@ public class BioDataFetcher {
                 	featureStr = featureStr + line + "\n";
                 }//if not begin of file xml tag
             }//while
+            //trim terminal version number from accessionStr
+            int versionBeginNum = accessionStr.indexOf(".1");
+            if(versionBeginNum != -1) {
+            	accessionStr = accessionStr.substring(0, versionBeginNum);
+            }
             uniqueAccessions.add(accessionStr);
             writer.append("<ACCESSION>" + accessionStr + "</ACCESSION>"  + "\n");
             writer.append("<ENTRY>" + "\n" + featureStr + "\n" + "</ENTRY>" + "\n");
@@ -179,12 +201,12 @@ public class BioDataFetcher {
         
 	}//doPost
 	
-	public static boolean isInList(List<String> allAccessionIds, String accessionStr) {
+	public static boolean containsIgnoreCase(List<String> allAccessionIds, String accessionStr) {
 		boolean isInList = false;
 		ListIterator<String> allAccessionIdsIter = allAccessionIds.listIterator();
 		while(allAccessionIdsIter.hasNext() && !isInList) {
 			String currentStr = allAccessionIdsIter.next();
-			if(currentStr.compareTo(accessionStr) == 0) {isInList = true;}//if
+			if(currentStr.compareToIgnoreCase(accessionStr) == 0) {isInList = true;}//if
 		}//while allAccessionIdsIter has next	
 		return isInList;
 	}//isInList
@@ -309,13 +331,15 @@ public class BioDataFetcher {
 			processedAccessions = new ArrayList<String>();
 		}//if processedAccessions is null
 		if(fileNum == 0) {
+			HashSet<String> processedAccessionsSet = new HashSet<String>();
 			List<File> files = getFiles(fileNum);
 			for(File file : files) {
-				processedAccessions.addAll(getProcessedAccesionsOfOneFile(file));
+				processedAccessionsSet.addAll(getProcessedAccesionsOfOneFile(file));
 				System.out.println(" in processedAccessions fileName: " + file.getName());
-				System.out.println(processedAccessions.size());
-				System.out.println(processedAccessions);	
+				System.out.println(processedAccessionsSet.size());
+				//System.out.println(processedAccessions);	
 			}//for fileCount
+			processedAccessions.addAll(processedAccessionsSet);
 		}//fileNum 0 treated differently due to size issues
 		else {
 			String fileName = fetcher.getResources("textOutBaseStr") + fileNum +".xml";
@@ -326,6 +350,7 @@ public class BioDataFetcher {
 	
 	public List<String> getProcessedAccesionsOfOneFile(File processedAccessionsFile){
 		List<String> accessionsInFileList = new ArrayList<String>();
+		HashSet<String> accessionsInFileSet = new HashSet<String>();
 		if(processedAccessionsFile.isFile()) {
 			char[] dataBuffer = new char[(int) processedAccessionsFile.length()];
 			try {
@@ -345,12 +370,18 @@ public class BioDataFetcher {
 				int endOfOneAccession = accessions[accCount].indexOf("</ACCESSION>");
 				if(endOfOneAccession != -1) {
 					String oneAccessionStr = accessions[accCount].substring(0, endOfOneAccession);
+					//trim version number
+					int versionBeginNum = oneAccessionStr.indexOf(".1");
+		            if(versionBeginNum != -1) {
+		            	oneAccessionStr = oneAccessionStr.substring(0, versionBeginNum);
+		            }
 					oneAccessionStr = oneAccessionStr.trim();
 					oneAccessionStr = oneAccessionStr.replaceAll("\\p{C}", "");
-					accessionsInFileList.add(oneAccessionStr);
+					accessionsInFileSet.add(oneAccessionStr);
 				}//if
 			}//for all stored accessions
 		}//if processedAccessionsFileStr is file
+		accessionsInFileList.addAll(accessionsInFileSet);
 		return accessionsInFileList;
 	}//getProcessedAccesionsOfOneFile
 	
@@ -368,13 +399,26 @@ public class BioDataFetcher {
 		return Arrays.asList(files);
 	}//getFiles
 	
+	public boolean removeAllIgnoreCase(List<String> reFetchAccessions, List<String> processedAccessions) {
+		boolean altered = false;
+		List<String> reFetchAccessionsCopy = new ArrayList<String>(reFetchAccessions);
+		for(String accession:reFetchAccessions) {
+			if(containsIgnoreCase(processedAccessions, accession)) {
+				reFetchAccessionsCopy.remove(accession);
+				altered = true;
+			}//if
+		}//for
+		reFetchAccessions = reFetchAccessionsCopy;
+		return altered;
+	}//removeAllIgnoreCase
+	
 	public void reFetch(int FileNum) {
 		boolean done = false;
 		while(!done) {
 			List<String> reFetchAccessions = new ArrayList<String>();
 			reFetchAccessions.addAll(processableAccessions);
 			getProcessedAccessions(FileNum);
-			done = !reFetchAccessions.removeAll(processedAccessions);
+			done = !removeAllIgnoreCase(reFetchAccessions,processedAccessions);
 			ListIterator<String> reFetchIter = reFetchAccessions.listIterator();
 			while(reFetchIter.hasNext()) {
 				String currentStr = reFetchIter.next();
