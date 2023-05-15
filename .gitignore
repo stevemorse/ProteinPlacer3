@@ -20,6 +20,9 @@ local.properties
 .settings/
 .loadpath
 
+# Local resources
+*.json
+
 # External tool builders
 .externalToolBuilders/
 

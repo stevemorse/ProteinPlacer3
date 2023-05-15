@@ -325,12 +325,12 @@ public class BioDataFetcher {
 		}//catch
 	}//writeUniqueAccessions
 	
-	public void getProcessedAccessions(int fileNum){
+	public void getProcessedAccessionsFASTAFile(int fileNum){
 		ResourceFetcher fetcher = ResourceFetcher.getInstance();
 		if(processedAccessions == null) {
 			processedAccessions = new ArrayList<String>();
 		}//if processedAccessions is null
-		if(fileNum == 0) {
+		if(fileNum == 0 || fileNum == 2  || fileNum == 5 || fileNum == 6) {
 			HashSet<String> processedAccessionsSet = new HashSet<String>();
 			List<File> files = getFiles(fileNum);
 			for(File file : files) {
@@ -417,7 +417,7 @@ public class BioDataFetcher {
 		while(!done) {
 			List<String> reFetchAccessions = new ArrayList<String>();
 			reFetchAccessions.addAll(processableAccessions);
-			getProcessedAccessions(FileNum);
+			getProcessedAccessionsFASTAFile(FileNum);
 			done = !removeAllIgnoreCase(reFetchAccessions,processedAccessions);
 			ListIterator<String> reFetchIter = reFetchAccessions.listIterator();
 			while(reFetchIter.hasNext()) {

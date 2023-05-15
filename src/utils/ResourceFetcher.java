@@ -12,7 +12,7 @@ public class ResourceFetcher {
 	
     private static ResourceFetcher instance = null;
     private String resourcefileName = "";
-    private ResourceFetcher() {resourcefileName = "/home/steve/git/ProteinPlacer3/resources/res.json";}
+    private ResourceFetcher() {resourcefileName = "resources/res.json";}
     
     public static ResourceFetcher getInstance() {
 	    if (instance == null) {

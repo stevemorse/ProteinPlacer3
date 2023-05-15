@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class LargeEntryFileSplitter {
+	private int maxEntries = 250;
 	static int fileNum = 0;
 	public static void main(String[] args) {
 		LargeEntryFileSplitter splitter = new LargeEntryFileSplitter();
@@ -33,7 +34,7 @@ public class LargeEntryFileSplitter {
 		    	String fileOut = fetcher.getResources("textOutBaseStr") + fileNum + "_" + fileCount + ".xml";
 		    	writer = new BufferedWriter(new FileWriter(fileOut));
 		    	//write entries in blocks of 1000 to new file
-		        while(entryCount < 1000 && scanner.hasNextLine()) {
+		        while(entryCount < maxEntries && scanner.hasNextLine()) {
 		        	//now test lines and write entries to output file
 		        	StringBuilder entryStrBuilder = new StringBuilder();
 		        	boolean currentEntryDone = false;
@@ -94,4 +95,42 @@ public class LargeEntryFileSplitter {
 	        scanner.close();
 	    }//if
 	}//split
+	
+	public void count (int filenum) {
+		ResourceFetcher fetcher = ResourceFetcher.getInstance();
+		String fileIn = fetcher.getResources("textOutBaseStr") + fileNum +".xml";
+		FileInputStream fis = null;
+		Scanner scanner = null;
+		boolean done = false;
+		int accesssionStarts =0;
+		int accesssionEnds =0;
+		try {
+		    fis = new FileInputStream(fileIn);
+		    scanner = new Scanner(fis, "UTF-8");
+		    int fileCount = 0;
+	        //set up new write file resources and variables
+	    	boolean firstLine = true;
+	    	boolean rootNodeClosed = false;
+	    	int entryCount = 0;
+	    	String fileOut = fetcher.getResources("textOutBaseStr") + fileNum + "_" + fileCount + ".xml";
+	    	while(scanner.hasNextLine()) {
+	    		String line = scanner.nextLine();
+	    		if(line.compareTo("<ACCESSION") == 0) {
+	    			accesssionStarts++;
+	    		}
+	    		if(line.compareTo("<ACCESSION") == 0) {
+	    			accesssionEnds++;
+	    		}
+	    	}//while scanner
+	    } catch (FileNotFoundException fnfe) {
+			fnfe.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();	
+	    }
+		if (accesssionStarts != accesssionEnds) {
+			System.out.println("start end mismatch error");
+		}
+		System.out.println("Accession starts: " + accesssionStarts);
+		System.out.println("Accession ends: " + accesssionEnds);
+	}
 }//class
